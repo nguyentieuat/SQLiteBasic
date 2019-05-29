@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/txtNameContact"
+        android:layout_width="178dp"
+        android:layout_height="37dp"
+        android:text="TextView"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/txtNumPhone"
+        android:layout_width="318dp"
+        android:layout_height="37dp"
+        android:text="TextView" />
+</LinearLayout>
