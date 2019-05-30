@@ -88,6 +88,8 @@ public class ContactAdapter extends ArrayAdapter {
                     MainActivity.listContact.add(contact);
                 }
                 cursor.close();
+                MainActivity.listContactAutoComplete.addAll(MainActivity.listContact);
+                MainActivity.contactAdapterAutoComplete.notifyDataSetChanged();
                 MainActivity.contactAdapter.notifyDataSetChanged();
 
             }

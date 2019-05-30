@@ -44,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     FloatingActionButton btnAdd;
 
     public static List listContact;
+    public static List listContactAutoComplete;
     public static ContactAdapter contactAdapter;
     public static ContactAdapterAutoComplete contactAdapterAutoComplete;
 
@@ -68,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Trả dữ liệu từ SQLite to View
         showAllContactOnListView();
+        listContactAutoComplete.addAll(listContact);
     }
 
     private void showAllContactOnListView() {
@@ -76,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
         // Truy vấn CSDL
         Cursor cursor = database.query("contact", null, null, null, null, null,null);
         listContact.clear();
+        listContactAutoComplete.clear();
         while (cursor.moveToNext()){
             Contact contact = new Contact();
             contact.setId(cursor.getInt(0));
@@ -86,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
         }
         cursor.close();
         contactAdapter.notifyDataSetChanged();
+//        listContactAutoComplete.addAll(listContact);
         contactAdapterAutoComplete.notifyDataSetChanged();
     }
 
@@ -175,6 +179,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
+
     }
 
     private void addControls() {
@@ -184,9 +190,10 @@ public class MainActivity extends AppCompatActivity {
         btnAdd = findViewById(R.id.btnAdd);
 
         listContact = new ArrayList<Contact>();
+        listContactAutoComplete = new ArrayList<Contact>();
         contactAdapter =  new ContactAdapter(MainActivity.this,R.layout.item_layout,listContact);
         lvContact.setAdapter(contactAdapter);
-        contactAdapterAutoComplete = new ContactAdapterAutoComplete(MainActivity.this, listContact);
+        contactAdapterAutoComplete = new ContactAdapterAutoComplete(MainActivity.this, listContactAutoComplete);
         txtSeach.setAdapter(contactAdapterAutoComplete);
     }
 

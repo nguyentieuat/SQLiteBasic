@@ -4,10 +4,12 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
@@ -15,6 +17,7 @@ import android.os.Bundle;
 import android.telephony.SmsManager;
 import android.text.InputType;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -23,6 +26,9 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.model.Contact;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SentMessageActivity extends AppCompatActivity {
 
@@ -33,8 +39,10 @@ public class SentMessageActivity extends AppCompatActivity {
     ListView lvMessage;
     Intent intent;
     Contact contact;
-    String phone, sms;
     BroadcastReceiver broadcastReceiver;
+
+    List listSMS;
+    ArrayAdapter arrayAdapter;
 
     public static int REQUEST_CODE_SMS = 2211;
 
@@ -70,6 +78,39 @@ public class SentMessageActivity extends AppCompatActivity {
                 Toast.makeText(SentMessageActivity.this, msg, Toast.LENGTH_LONG).show();
             }
         };
+
+        listSMS = new ArrayList();
+        listSMS = getAllSMS();
+
+        arrayAdapter = new ArrayAdapter(SentMessageActivity.this, android.R.layout.simple_list_item_1, listSMS);
+        lvMessage.setAdapter(arrayAdapter);
+
+
+    }
+
+    private List getAllSMS() {
+        List listSMS = new ArrayList();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.READ_SMS}, 100);
+            //After this point you wait for callback in onRequestPermissionsResult(int, String[], int[]) overriden method
+        } else {
+            Uri uri = Uri.parse("content://sms/inbox");
+            Cursor cursor = getContentResolver().query(uri,null, " address = " + txtPhoneReceiver.getText().toString(), null, null);
+            int indexTimeStamp = cursor.getColumnIndex("date");
+            int indexBody = cursor.getColumnIndex("body");
+
+            if (indexBody < 0 || !cursor.moveToFirst())
+                return listSMS;
+
+            while (cursor.moveToNext()){
+                String timeStamp = cursor.getString(indexTimeStamp);
+                String body = cursor.getString(indexBody);
+
+                listSMS.add(timeStamp + "\n" + body);
+            }
+        }
+        return  listSMS;
     }
 
     private void addEvents() {

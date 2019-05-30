@@ -42,49 +42,81 @@ public class ContactAdapterAutoComplete extends ArrayAdapter<Contact> {
             txtNameContact.setText(contact.getName());
             txtNumPhone.setText(contact.getPhone());
         }
-        Toast.makeText(convertView.getContext(), "" + listContact.size(), Toast.LENGTH_LONG).show();
         return convertView;
     }
 
-    @Override
-    public Filter getFilter() {
-        return new Filter() {
-            @Override
-            protected FilterResults performFiltering(CharSequence constraint) {
-                FilterResults results = new FilterResults();
-                List<Contact> suggestions = new ArrayList<>();
-
-                if (constraint == null || constraint.length() == 0) {
-                    suggestions.addAll(listContact);
-
-                } else {
-                    String filterPattern = constraint.toString().trim();
-
-                    for (Contact item : listContact) {
-                        if (filterPattern.matches("\\d")){
-                            if (item.getPhone().contains(filterPattern)) {
-                                suggestions.add(item);
-                            }
-                        } else {
-                            if (item.getName().contains(filterPattern)) {
-                                suggestions.add(item);
-                            }
-                        }
-                    }
-                }
-
-                results.values = suggestions;
-                results.count = suggestions.size();
-
-                return results;
-            }
-
-            @Override
-            protected void publishResults(CharSequence constraint, FilterResults results) {
-                clear();
-                addAll((List) results.values);
-                notifyDataSetChanged();
-            }
-        };
-    }
+//    @Override
+//    public Filter getFilter() {
+//        return new Filter() {
+//            @Override
+//            protected FilterResults performFiltering(CharSequence constraint) {
+//                FilterResults results = new FilterResults();
+//                List<Contact> suggestions = new ArrayList<>();
+//
+//                if (constraint == null || constraint.length() == 0) {
+//                    suggestions.addAll(listContact);
+//
+//                } else {
+//                    String filterPattern = constraint.toString().trim();
+//
+//                    for (Contact item : listContact) {
+//                        if (filterPattern.matches("\\d")){
+//                            if (item.getPhone().contains(filterPattern)) {
+//                                suggestions.add(item);
+//                            }
+//                        } else {
+//                            if (item.getName().contains(filterPattern)) {
+//                                suggestions.add(item);
+//                            }
+//                        }
+//                    }
+//                }
+//
+//                results.values = suggestions;
+//                results.count = suggestions.size();
+//
+//                return results;
+//            }
+//
+//            @Override
+//            protected void publishResults(CharSequence constraint, FilterResults results) {
+//                clear();
+//                addAll((List) results.values);
+//                notifyDataSetChanged();
+//            }
+//
+//            @Override
+//            protected FilterResults performFiltering(CharSequence constraint) {
+//                FilterResults results = new FilterResults();
+//                List<Contact> suggestions = new ArrayList<>();
+//
+//                if (constraint == null || constraint.length() == 0) {
+//                    suggestions.addAll(listContact);
+//
+//                } else {
+//                    String filterPattern = constraint.toString().trim();
+//
+//                    for (Contact item : listContact) {
+//                        if (item.getPhone().contains(filterPattern)) {
+//                            suggestions.add(item);
+//                        }
+//                    }
+//                }
+//
+//                results.values = suggestions;
+//                results.count = suggestions.size();
+//
+//                return results;
+//            }
+//
+//            @Override
+//            protected void publishResults(CharSequence constraint, FilterResults results) {
+//                clear();
+//                addAll((List) results.values);
+//                notifyDataSetChanged();
+//            }
+//
+//
+//        };
+//    }
 }
