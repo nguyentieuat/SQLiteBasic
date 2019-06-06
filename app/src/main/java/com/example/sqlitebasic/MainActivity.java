@@ -27,6 +27,7 @@ import android.widget.Toast;
 
 import com.example.adapter.ContactAdapter;
 import com.example.adapter.ContactAdapterAutoComplete;
+import com.example.interfacelisterner.MainActivityListener;
 import com.example.model.Contact;
 
 import java.io.File;
@@ -36,15 +37,15 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MainActivityListener {
     public static final int REQUEST_CODE_MAIN = 13;
     public static final int REQUEST_CODE_DEL = 17;
+    public static final int SENT_MESSAGE = 10;
     AutoCompleteTextView txtSeach;
     ListView lvContact;
     FloatingActionButton btnAdd;
 
     public static List listContact;
-    public static List listContactAutoComplete;
     public static ContactAdapter contactAdapter;
     public static ContactAdapterAutoComplete contactAdapterAutoComplete;
 
@@ -69,7 +70,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Trả dữ liệu từ SQLite to View
         showAllContactOnListView();
-        listContactAutoComplete.addAll(listContact);
     }
 
     private void showAllContactOnListView() {
@@ -78,7 +78,6 @@ public class MainActivity extends AppCompatActivity {
         // Truy vấn CSDL
         Cursor cursor = database.query("contact", null, null, null, null, null,null);
         listContact.clear();
-        listContactAutoComplete.clear();
         while (cursor.moveToNext()){
             Contact contact = new Contact();
             contact.setId(cursor.getInt(0));
@@ -89,8 +88,7 @@ public class MainActivity extends AppCompatActivity {
         }
         cursor.close();
         contactAdapter.notifyDataSetChanged();
-//        listContactAutoComplete.addAll(listContact);
-        contactAdapterAutoComplete.notifyDataSetChanged();
+        contactAdapterAutoComplete.updateListContact(listContact);
     }
 
     private void copyDBtoSys() {
@@ -184,17 +182,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addControls() {
-
         txtSeach = findViewById(R.id.txtSeach);
         lvContact = findViewById(R.id.lvContact);
         btnAdd = findViewById(R.id.btnAdd);
-
         listContact = new ArrayList<Contact>();
-        listContactAutoComplete = new ArrayList<Contact>();
         contactAdapter =  new ContactAdapter(MainActivity.this,R.layout.item_layout,listContact);
         lvContact.setAdapter(contactAdapter);
-        contactAdapterAutoComplete = new ContactAdapterAutoComplete(MainActivity.this, listContactAutoComplete);
+        contactAdapterAutoComplete = new ContactAdapterAutoComplete(MainActivity.this, listContact);
         txtSeach.setAdapter(contactAdapterAutoComplete);
+        contactAdapter.setListener(this);
     }
 
 
@@ -235,4 +231,43 @@ public class MainActivity extends AppCompatActivity {
         showAllContactOnListView();
     }
 
+    @Override
+    public void sentSmsContact(Contact contact) {
+        Intent intent = new Intent(MainActivity.this, SentMessageActivity.class);
+        intent.putExtra("contact", contact);
+        MainActivity.this.startActivityForResult(intent, SENT_MESSAGE);
+    }
+
+    @Override
+    public void callContact(Contact contact) {
+        Uri uri = Uri.parse("tel:" + contact.getPhone());
+        Intent intent = new Intent(Intent.ACTION_CALL);
+        intent.setData(uri);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && MainActivity.this.checkSelfPermission(Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+            MainActivity.this.requestPermissions(new String[]{Manifest.permission.CALL_PHONE}, 100);
+            //After this point you wait for callback in onRequestPermissionsResult(int, String[], int[]) overriden method
+        } else {
+            MainActivity.this.startActivity(intent);
+        }
+    }
+
+    @Override
+    public void delContact(Contact contact) {
+        database.delete("contact"," id = ?", new String[]{contact.getId() + ""});
+
+        Cursor cursor =  MainActivity.database.query("contact", null, null, null, null, null,null);
+        listContact.clear();
+        while (cursor.moveToNext()){
+            Contact contactResult = new Contact();
+            contactResult.setId(cursor.getInt(0));
+            contactResult.setName(cursor.getString(1));
+            contactResult.setPhone(cursor.getString(2));
+            contactResult.setAvatar(cursor.getBlob(3));
+            listContact.add(contactResult);
+        }
+        cursor.close();
+        contactAdapterAutoComplete.updateListContact(MainActivity.listContact);
+        contactAdapter.notifyDataSetChanged();
+    }
 }

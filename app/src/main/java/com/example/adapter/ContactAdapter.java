@@ -17,6 +17,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.interfacelisterner.MainActivityListener;
 import com.example.model.Contact;
 import com.example.sqlitebasic.MainActivity;
 import com.example.sqlitebasic.R;
@@ -25,13 +26,13 @@ import com.example.sqlitebasic.SentMessageActivity;
 import java.util.List;
 
 public class ContactAdapter extends ArrayAdapter {
-    public static final int SENT_MESSAGE = 10;
     Activity context;
     int resource;
     List objects;
     ImageButton btnCall ;
     ImageButton btnSms ;
     ImageButton btnDel;
+    MainActivityListener mainActivityListener;
     public ContactAdapter(Activity context, int resource, List objects) {
         super(context, resource, objects);
         this.context = context;
@@ -75,52 +76,28 @@ public class ContactAdapter extends ArrayAdapter {
         btnDel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MainActivity.database.delete("contact"," id = ?", new String[]{contact.getId() + ""});
-
-                Cursor cursor =  MainActivity.database.query("contact", null, null, null, null, null,null);
-                MainActivity.listContact.clear();
-                while (cursor.moveToNext()){
-                    Contact contact = new Contact();
-                    contact.setId(cursor.getInt(0));
-                    contact.setName(cursor.getString(1));
-                    contact.setPhone(cursor.getString(2));
-                    contact.setAvatar(cursor.getBlob(3));
-                    MainActivity.listContact.add(contact);
-                }
-                cursor.close();
-                MainActivity.listContactAutoComplete.addAll(MainActivity.listContact);
-                MainActivity.contactAdapterAutoComplete.notifyDataSetChanged();
-                MainActivity.contactAdapter.notifyDataSetChanged();
-
-            }
+                mainActivityListener.delContact(contact);
+                            }
         });
 
         btnCall.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Uri uri = Uri.parse("tel:" + contact.getPhone());
-                Intent intent = new Intent(Intent.ACTION_CALL);
-                intent.setData(uri);
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && context.checkSelfPermission(Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                    context.requestPermissions(new String[]{Manifest.permission.CALL_PHONE}, 100);
-                    //After this point you wait for callback in onRequestPermissionsResult(int, String[], int[]) overriden method
-                } else {
-                    context.startActivity(intent);
-                }
-
+                mainActivityListener.callContact(contact);
             }
         });
 
         btnSms.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(context, SentMessageActivity.class);
-                intent.putExtra("contact", contact);
-                context.startActivityForResult(intent, SENT_MESSAGE);
+                mainActivityListener.sentSmsContact(contact);
             }
         });
 
+    }
+
+    public void setListener(MainActivityListener mainActivityListener){
+        this.mainActivityListener = mainActivityListener;
     }
 
 }
